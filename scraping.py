@@ -2,30 +2,52 @@ from bs4 import BeautifulSoup as bs4
 import requests
 import time
 import pandas as pd
+import re
 
-base_url = 'https://comsite.jp/'
+base_url = 'https://job.js88.com/'
 
-data = {'Name': [], 'URL': [], 'Industry': []}
-# for i in range(10):
-# url = base_url + str(i + 1)
-res = requests.get(base_url)
-soup = bs4(res.text, "html.parser")
+list_url = base_url + 'listed_company/list?'
 
-content = soup.find('div', {'id' : 'content'})
-article_list = content.find_all('article')
+data = {'Name': [], 'URL': [], 'Industry': [], 'Address': []}
+for i in range(10): # 負荷状況みて増やす Max現状 190
+    page_url = list_url + 's=' + str(i + 1)
+    res = requests.get(page_url)
+    soup = bs4(res.text, "html.parser")
 
-for article in article_list:
-    title = article.find('header').find('h2').text
-    url = article.find('footer').find('a').get('href')
-    date = article.find('header').find('a').text
+    company_list = soup.find('ul', {'class' : 'result_list'})
+    contents = company_list.find_all('li')
 
-    data['Name'].append(title)
-    data['URL'].append(url)
-    data['Industry'].append(date)
+    for content in contents:
+        elem = content.find('a', {'class' : 'detail_link'})
+        if (elem is None): continue
+        title = elem.text
+        url = content.find('a').get('href')
+        industry = content.find('div', {'class': 'co_type'}).text
 
-# print('done page' + str(i + 1))
-# time.sleep(2) #　サーバー負荷軽減のため２秒待つ
+        # 詳細ページ取得
+        detail_page = base_url + url
+        detail_res = requests.get(detail_page)
+        soup = bs4(detail_res.text, "html.parser")
+
+        section = soup.find('section', {'id': 'sec1'})
+        company_info = section.find('dl', {'class' : 'dtl_info'})
+
+        address = company_info.find_all('dd')[5].text
+        redirect_url = company_info.find('a').get('href')
+        parts = redirect_url.split('url=')
+        if (len(parts) > 1) :
+            url = parts[1]
+            if (re.match(r"^http(?!s)", url)) :
+                data['URL'].append(url)
+                data['Name'].append(title)
+                data['Industry'].append(industry)
+                if (re.match(r"^http", address)) :
+                    data['Address'].append(company_info.find_all('dd')[4].text)
+                else:
+                    data['Address'].append(company_info.find_all('dd')[5].text)
+    print('done page' + str(i + 1))
+    # time.sleep(2) #　必要に応じてサーバー負荷軽減のため２秒待つ
 
 df = pd.DataFrame(data)
-df.to_excel('list_data.xlsx', sheet_name ='東証プライム')
+df.to_excel('list_data.xlsx', sheet_name ='上場企業')
 print('Done list output')
