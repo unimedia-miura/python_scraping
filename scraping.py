@@ -9,7 +9,9 @@ base_url = 'https://job.js88.com/'
 list_url = base_url + 'listed_company/list?'
 
 data = {'Name': [], 'URL': [], 'Industry': [], 'Address': []}
-for i in range(10): # 負荷状況みて増やす Max現状 190
+
+start = time.perf_counter()
+for i in range(20): # 負荷状況みて増やす Max現状 190
     page_url = list_url + 's=' + str(i + 1)
     res = requests.get(page_url)
     soup = bs4(res.text, "html.parser")
@@ -46,8 +48,12 @@ for i in range(10): # 負荷状況みて増やす Max現状 190
                 else:
                     data['Address'].append(company_info.find_all('dd')[5].text)
     print('done page' + str(i + 1))
-    # time.sleep(2) #　必要に応じてサーバー負荷軽減のため２秒待つ
+    time.sleep(2) #　必要に応じてサーバー負荷軽減のため２秒待つ
 
 df = pd.DataFrame(data)
-df.to_excel('list_data.xlsx', sheet_name ='上場企業')
+df.to_excel('http_company_list.xlsx', sheet_name ='上場企業')
+
+end = time.perf_counter()
+
 print('Done list output')
+print('{:.2f}'.format((end-start)/60))
