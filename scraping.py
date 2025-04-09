@@ -11,7 +11,7 @@ list_url = base_url + 'listed_company/list?'
 data = {'Name': [], 'URL': [], 'Industry': [], 'Address': []}
 
 start = time.perf_counter()
-for i in range(20): # 負荷状況みて増やす Max現状 190
+for i in range(190): # 負荷状況みて増やす Max現状 190
     page_url = list_url + 's=' + str(i + 1)
     res = requests.get(page_url)
     soup = bs4(res.text, "html.parser")
@@ -48,7 +48,7 @@ for i in range(20): # 負荷状況みて増やす Max現状 190
                 else:
                     data['Address'].append(company_info.find_all('dd')[5].text)
     print('done page' + str(i + 1))
-    time.sleep(2) #　必要に応じてサーバー負荷軽減のため２秒待つ
+    time.sleep(1) #　必要に応じてサーバー負荷軽減のため1秒待つ
 
 df = pd.DataFrame(data)
 df.to_excel('http_company_list.xlsx', sheet_name ='上場企業')
