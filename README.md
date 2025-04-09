@@ -11,6 +11,6 @@
 5. 企業HPのURLが"http://"から始まるものをdataオブジェクトにまとめる
 6. excelファイルにdataを保存
 
-- *実行時間がそこそこかかってしまう点が課題（10ページ分で約4分ほどかかる）
+- *実行時間がそこそこかかってしまう点が課題（10ページ分で約4分=> （非同期Verで）30秒ほどかかる）
 
 - Google Colabでも実装済です（環境構築不要で実行できます） 以下にアクセスして、make_http_compnay_listを開き実行する。 https://drive.google.com/drive/folders/1FTnpzPIdHZXr6tTOyyQs0pnKr6MgCGVN
